@@ -13,6 +13,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import io.jeidiiy.bankappjunit5.domain.user.UserEnum;
+import io.jeidiiy.bankappjunit5.util.CustomResponseUtil;
 
 @Configuration
 public class SecurityConfig {
@@ -31,6 +32,10 @@ public class SecurityConfig {
 		http.formLogin().disable();
 		// httpBasic은 브라우저가 팝업 창을 이용해서 사용자 인증을 진행한다.
 		http.httpBasic().disable();
+
+		// Exception 가로채기
+		http.exceptionHandling().authenticationEntryPoint((req, res, authException) ->
+			CustomResponseUtil.unAuthentication(res, "로그인을 진행해 주세요"));
 
 		http.authorizeRequests().antMatchers("/api/s/**").authenticated()
 			.antMatchers("/api/admin/**").hasRole("" + UserEnum.ADMIN)
