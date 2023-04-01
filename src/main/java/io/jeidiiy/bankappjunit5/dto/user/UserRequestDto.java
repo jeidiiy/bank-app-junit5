@@ -1,5 +1,7 @@
 package io.jeidiiy.bankappjunit5.dto.user;
 
+import javax.validation.constraints.NotEmpty;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import io.jeidiiy.bankappjunit5.domain.user.User;
@@ -12,10 +14,13 @@ import lombok.ToString;
 @Getter
 @Setter
 public class UserRequestDto {
-	// 유효성 검사
+	@NotEmpty
 	private String username;
+	@NotEmpty
 	private String password;
+	@NotEmpty
 	private String email;
+	@NotEmpty
 	private String fullName;
 
 	public User toEntity(PasswordEncoder passwordEncoder) {
