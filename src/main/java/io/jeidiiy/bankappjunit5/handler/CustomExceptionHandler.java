@@ -9,11 +9,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import io.jeidiiy.bankappjunit5.dto.ResponseDto;
 import io.jeidiiy.bankappjunit5.handler.ex.CustomApiException;
+import io.jeidiiy.bankappjunit5.handler.ex.CustomForbiddenException;
 import io.jeidiiy.bankappjunit5.handler.ex.CustomValidationException;
 
 @RestControllerAdvice
 public class CustomExceptionHandler {
 	private final Logger log = LoggerFactory.getLogger(getClass());
+
+	@ExceptionHandler(CustomForbiddenException.class)
+	public ResponseEntity<?> forbiddenApiException(CustomForbiddenException ex) {
+		log.error(ex.getMessage());
+		return new ResponseEntity<>(new ResponseDto<>(-1, ex.getMessage(), null), HttpStatus.FORBIDDEN);
+	}
 
 	@ExceptionHandler(CustomValidationException.class)
 	public ResponseEntity<?> validationApiException(CustomValidationException ex) {

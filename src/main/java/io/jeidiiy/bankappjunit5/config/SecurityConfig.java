@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -15,6 +16,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import io.jeidiiy.bankappjunit5.config.jwt.JwtAuthenticationFilter;
+import io.jeidiiy.bankappjunit5.config.jwt.JwtAuthorizationFilter;
 import io.jeidiiy.bankappjunit5.domain.user.UserEnum;
 import io.jeidiiy.bankappjunit5.util.CustomResponseUtil;
 
@@ -38,9 +40,13 @@ public class SecurityConfig {
 
 		http.apply(new CustomSecurityFilterManager());
 
-		// Exception 가로채기
+		// 인증 실패
 		http.exceptionHandling().authenticationEntryPoint((req, res, authException) ->
-			CustomResponseUtil.unAuthentication(res, "로그인을 진행해 주세요"));
+			CustomResponseUtil.fail(res, "로그인을 진행해 주세요", HttpStatus.UNAUTHORIZED));
+
+		// 인가 실패
+		http.exceptionHandling().accessDeniedHandler((req, res, accessDeniedException) ->
+			CustomResponseUtil.fail(res, "권한이 없습니다", HttpStatus.FORBIDDEN));
 
 		http.authorizeRequests().antMatchers("/api/s/**").authenticated()
 			.antMatchers("/api/admin/**").hasRole("" + UserEnum.ADMIN)
@@ -72,6 +78,7 @@ public class SecurityConfig {
 		public void configure(HttpSecurity builder) throws Exception {
 			AuthenticationManager authenticationManager = builder.getSharedObject(AuthenticationManager.class);
 			builder.addFilter(new JwtAuthenticationFilter(authenticationManager));
+			builder.addFilter(new JwtAuthorizationFilter(authenticationManager));
 			super.configure(builder);
 		}
 	}

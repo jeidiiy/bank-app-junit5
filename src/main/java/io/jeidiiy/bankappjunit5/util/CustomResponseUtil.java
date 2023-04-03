@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,13 +27,13 @@ public class CustomResponseUtil {
 		}
 	}
 
-	public static void unAuthentication(HttpServletResponse res, String msg) {
+	public static void fail(HttpServletResponse res, String msg, HttpStatus status) {
 		try {
 			ObjectMapper om = new ObjectMapper();
 			ResponseDto<?> responseDto = new ResponseDto<>(-1, "인증안됨", msg);
 			String responseBody = om.writeValueAsString(responseDto);
 			res.setContentType("application/json; charset=utf-8");
-			res.setStatus(401);
+			res.setStatus(status.value());
 			res.getWriter().println(responseBody);
 		} catch (Exception exception) {
 			log.error("서버 파싱 에러");
