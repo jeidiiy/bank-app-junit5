@@ -1,10 +1,12 @@
 package io.jeidiiy.bankappjunit5.service;
 
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +20,7 @@ import io.jeidiiy.bankappjunit5.domain.user.User;
 import io.jeidiiy.bankappjunit5.domain.user.UserRepository;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto;
 import io.jeidiiy.bankappjunit5.dto.account.AccountRespDto;
+import io.jeidiiy.bankappjunit5.dto.account.AccountRespDto.AccountListRespDto;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTests extends DummyObject {
@@ -30,6 +33,30 @@ class AccountServiceTests extends DummyObject {
 
 	@Mock
 	private AccountRepository accountRepository;
+
+	@Test
+	void findByLoginUserId_test() {
+		//given
+		Long userId = 1L;
+
+		// stub 1
+		User mockUser = newMockUser(1L, "test", "스트테");
+		given(userRepository.findById(any())).willReturn(Optional.of(mockUser));
+
+		// stub 2
+		Account mockAccount1 = newMockAccount(1L, 1234L, 1000L, mockUser);
+		Account mockAccount2 = newMockAccount(2L, 5678L, 1000L, mockUser);
+		List<Account> accounts = Arrays.asList(mockAccount1, mockAccount2);
+
+		given(accountRepository.findByUser_id(any())).willReturn(accounts);
+
+		//when
+		AccountListRespDto accountListRespDto = accountService.findByUserId(mockUser.getId());
+
+		//then
+		assertThat(accountListRespDto.getFullName()).isEqualTo("스트테");
+		assertThat(accountListRespDto.getAccounts().size()).isEqualTo(2);
+	}
 
 	@Test
 	void register_test() {
@@ -53,7 +80,7 @@ class AccountServiceTests extends DummyObject {
 		AccountRespDto.AccountSaveRespDto accountSaveRespDto = accountService.register(accountSaveReqDto, 1L);
 
 		//then
-		Assertions.assertThat(accountSaveRespDto.getNumber()).isEqualTo(mockAccount.getNumber());
+		assertThat(accountSaveRespDto.getNumber()).isEqualTo(mockAccount.getNumber());
 	}
 
 }
