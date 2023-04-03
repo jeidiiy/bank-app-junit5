@@ -9,6 +9,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -26,12 +27,14 @@ import lombok.NoArgsConstructor;
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 @Entity
-@Table(name = "account_tb")
+@Table(name = "account_tb", indexes = {
+	@Index(name = "idx_account_number", columnList = "number")
+})
 public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	@Column(unique = true, nullable = false, length = 20)
+	@Column(unique = true, nullable = false, length = 4)
 	private Long number;
 	@Column(nullable = false, length = 4)
 	private Long password;
