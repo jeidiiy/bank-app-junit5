@@ -18,7 +18,7 @@ public class JwtProcess {
 
 	// 토큰 생성
 	public static String create(LoginUser loginUser) {
-		return JWT.create()
+		return JwtVO.TOKEN_PREFIX + JWT.create()
 			.withSubject("bank")
 			.withExpiresAt(new Date(System.currentTimeMillis() + JwtVO.EXPIRATION_TIME))
 			.withClaim("id", loginUser.getUser().getId())
