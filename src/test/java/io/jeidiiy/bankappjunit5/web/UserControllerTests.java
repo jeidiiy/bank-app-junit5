@@ -3,6 +3,7 @@ package io.jeidiiy.bankappjunit5.web;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -18,6 +20,7 @@ import io.jeidiiy.bankappjunit5.config.dummy.DummyObject;
 import io.jeidiiy.bankappjunit5.domain.user.UserRepository;
 import io.jeidiiy.bankappjunit5.dto.user.UserRequestDto;
 
+@Transactional
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class UserControllerTests extends DummyObject {
@@ -30,12 +33,17 @@ class UserControllerTests extends DummyObject {
 	@Autowired
 	private UserRepository userRepository;
 
+	@BeforeEach
+	void init() {
+		userRepository.save(newUser("test", "스트테"));
+	}
+
 	@DisplayName("회원가입 테스트 성공")
 	@Test
 	void signup_test_success() throws Exception {
 		//given
 		UserRequestDto requestDto = new UserRequestDto();
-		requestDto.setUsername("test");
+		requestDto.setUsername("toast");
 		requestDto.setPassword("1234");
 		requestDto.setEmail("test@gmail.com");
 		requestDto.setFullName("테스트");
@@ -68,9 +76,5 @@ class UserControllerTests extends DummyObject {
 
 		//then
 		resultActions.andExpect(status().isBadRequest());
-	}
-
-	private void dataSetting() {
-		userRepository.save(newUser("test", "스트테"));
 	}
 }
