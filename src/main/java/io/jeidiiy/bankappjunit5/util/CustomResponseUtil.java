@@ -13,6 +13,19 @@ public class CustomResponseUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(CustomResponseUtil.class);
 
+	public static void success(HttpServletResponse res, Object dto) {
+		try {
+			ObjectMapper om = new ObjectMapper();
+			ResponseDto<?> responseDto = new ResponseDto<>(1, "로그인성공", dto);
+			String responseBody = om.writeValueAsString(responseDto);
+			res.setContentType("application/json; charset=utf-8");
+			res.setStatus(200);
+			res.getWriter().println(responseBody);
+		} catch (Exception exception) {
+			log.error("서버 파싱 에러");
+		}
+	}
+
 	public static void unAuthentication(HttpServletResponse res, String msg) {
 		try {
 			ObjectMapper om = new ObjectMapper();
@@ -24,6 +37,5 @@ public class CustomResponseUtil {
 		} catch (Exception exception) {
 			log.error("서버 파싱 에러");
 		}
-
 	}
 }
