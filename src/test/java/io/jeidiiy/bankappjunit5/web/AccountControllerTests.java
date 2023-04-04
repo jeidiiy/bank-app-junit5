@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,6 +32,8 @@ import io.jeidiiy.bankappjunit5.domain.user.UserRepository;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class AccountControllerTests extends DummyObject {
 
+	private final Logger log = LoggerFactory.getLogger(getClass());
+
 	@Autowired
 	private MockMvc mockMvc;
 	@Autowired
@@ -45,6 +49,26 @@ class AccountControllerTests extends DummyObject {
 		User toast = userRepository.save(newUser("toast", "스트토"));
 		accountRepository.save(newAccount(1111L, test));
 		accountRepository.save(newAccount(2222L, toast));
+	}
+
+	@Test
+	void depositAccount_test() throws Exception {
+		//given
+		AccountDepositReqDto depositReqDto = new AccountDepositReqDto(1111L, 100L, "DEPOSIT", "01011112222");
+
+		String requestBody = objectMapper.writeValueAsString(depositReqDto);
+		log.info("requestBody: {}", requestBody);
+
+		//when
+		ResultActions resultActions =
+			mockMvc.perform(post("/api/account/deposit")
+				.content(requestBody)
+				.contentType(MediaType.APPLICATION_JSON));
+
+		//then
+		String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+		log.info("responseBody: {}", responseBody);
+		resultActions.andExpect(status().isCreated());
 	}
 
 	@WithUserDetails(value = "test", setupBefore = TestExecutionEvent.TEST_EXECUTION)

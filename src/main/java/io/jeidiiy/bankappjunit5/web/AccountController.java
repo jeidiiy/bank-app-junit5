@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.jeidiiy.bankappjunit5.config.auth.LoginUser;
 import io.jeidiiy.bankappjunit5.dto.ResponseDto;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto;
+import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.AccountDepositReqDto;
 import io.jeidiiy.bankappjunit5.service.AccountService;
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +27,14 @@ import lombok.RequiredArgsConstructor;
 @RestController
 public class AccountController {
 	private final AccountService accountService;
+
+	@PostMapping("/account/deposit")
+	public ResponseEntity<?> depositAccount(
+		@RequestBody @Validated AccountDepositReqDto accountDepositReqDto,
+		BindingResult bindingResult) {
+		AccountDepositRespDto accountDepositRespDto = accountService.deposit(accountDepositReqDto);
+		return new ResponseEntity<>(new ResponseDto<>(1, "계좌 입금 완료", accountDepositRespDto), HttpStatus.CREATED);
+	}
 
 	@DeleteMapping("/s/account/{number}")
 	public ResponseEntity<?> deleteAccount(@PathVariable Long number, @AuthenticationPrincipal LoginUser loginUser) {
