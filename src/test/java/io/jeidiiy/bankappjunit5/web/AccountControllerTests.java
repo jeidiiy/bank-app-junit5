@@ -4,8 +4,6 @@ import static io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import javax.persistence.EntityManager;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +13,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,7 +24,7 @@ import io.jeidiiy.bankappjunit5.domain.account.AccountRepository;
 import io.jeidiiy.bankappjunit5.domain.user.User;
 import io.jeidiiy.bankappjunit5.domain.user.UserRepository;
 
-@Transactional
+@Sql("classpath:db/teardown.sql")
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -40,8 +38,6 @@ class AccountControllerTests extends DummyObject {
 	private UserRepository userRepository;
 	@Autowired
 	private AccountRepository accountRepository;
-	@Autowired
-	private EntityManager em;
 
 	@BeforeEach
 	void init() {
@@ -49,7 +45,6 @@ class AccountControllerTests extends DummyObject {
 		User toast = userRepository.save(newUser("toast", "스트토"));
 		accountRepository.save(newAccount(1111L, test));
 		accountRepository.save(newAccount(2222L, toast));
-		em.clear();
 	}
 
 	@WithUserDetails(value = "test", setupBefore = TestExecutionEvent.TEST_EXECUTION)
