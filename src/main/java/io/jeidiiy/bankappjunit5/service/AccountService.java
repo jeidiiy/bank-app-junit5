@@ -5,11 +5,6 @@ import static io.jeidiiy.bankappjunit5.dto.account.AccountRespDto.*;
 import java.util.List;
 import java.util.Optional;
 
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,10 +17,9 @@ import io.jeidiiy.bankappjunit5.domain.user.User;
 import io.jeidiiy.bankappjunit5.domain.user.UserRepository;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.AccountDepositReqDto;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.AccountSaveReqDto;
+import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.AccountWithdrawReqDto;
 import io.jeidiiy.bankappjunit5.handler.ex.CustomApiException;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -141,22 +135,5 @@ public class AccountService {
 		Account accountPS = accountRepository.save(accountSaveReqDto.toEntity(userPS));
 
 		return new AccountSaveRespDto(accountPS);
-	}
-
-	@Getter
-	@Setter
-	public static class AccountWithdrawReqDto {
-		@NotNull
-		@Digits(integer = 4, fraction = 4)
-		private Long number;
-		@NotNull
-		@Digits(integer = 4, fraction = 4)
-		private Long password;
-		@NotNull
-		private Long amount;
-		@NotEmpty
-		@Pattern(regexp = "^(DEPOSIT)$")
-		private String gubun;
-
 	}
 }

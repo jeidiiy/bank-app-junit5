@@ -12,6 +12,22 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 public class AccountReqDto {
+	@NoArgsConstructor
+	@Getter
+	@Setter
+	public static class AccountWithdrawReqDto {
+		@NotNull
+		@Digits(integer = 4, fraction = 4)
+		private Long number;
+		@NotNull
+		@Digits(integer = 4, fraction = 4)
+		private Long password;
+		@NotNull
+		private Long amount;
+		@NotEmpty
+		@Pattern(regexp = "^(WITHDRAW)$")
+		private String gubun;
+	}
 
 	@NoArgsConstructor
 	@Getter
