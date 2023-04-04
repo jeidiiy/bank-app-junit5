@@ -18,6 +18,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import io.jeidiiy.bankappjunit5.domain.user.User;
+import io.jeidiiy.bankappjunit5.handler.ex.CustomApiException;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -62,5 +63,11 @@ public class Account {
 		this.user = user;
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
+	}
+
+	public void checkOwner(Long userId) {
+		if (user.getId().compareTo(userId) != 0) {
+			throw new CustomApiException("계좌 소유자가 아닙니다");
+		}
 	}
 }

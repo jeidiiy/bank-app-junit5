@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +22,7 @@ import io.jeidiiy.bankappjunit5.domain.user.UserRepository;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto;
 import io.jeidiiy.bankappjunit5.dto.account.AccountRespDto;
 import io.jeidiiy.bankappjunit5.dto.account.AccountRespDto.AccountListRespDto;
+import io.jeidiiy.bankappjunit5.handler.ex.CustomApiException;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTests extends DummyObject {
@@ -33,6 +35,26 @@ class AccountServiceTests extends DummyObject {
 
 	@Mock
 	private AccountRepository accountRepository;
+
+	@Test
+	void delete_test() throws Exception {
+		//given
+		Long number = 1111L;
+		Long userId = 2L;
+
+		// stub 1
+		User mockUser = newMockUser(userId, "test", "스트테");
+		Account mockAccount = newMockAccount(1L, number, 1000L, mockUser);
+		given(accountRepository.findByNumber(any())).willReturn(Optional.of(mockAccount));
+
+		//when
+		accountService.delete(number, userId);
+
+		//then
+		Assertions.assertThatThrownBy(() -> {
+			throw new CustomApiException("계좌삭제 실패");
+		});
+	}
 
 	@Test
 	void findByLoginUserId_test() {

@@ -23,6 +23,17 @@ public class AccountService {
 	private final UserRepository userRepository;
 	private final AccountRepository accountRepository;
 
+	public void delete(Long number, Long userId) {
+		// 계좌 확인
+		Account accountPS = accountRepository.findByNumber(number)
+			.orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다."));
+		// 계좌 소유자 확인
+		accountPS.checkOwner(userId);
+
+		// 계좌 삭제
+		accountRepository.deleteById(accountPS.getId());
+	}
+
 	public AccountListRespDto findByUserId(Long userId) {
 		User userPS = userRepository.findById(userId).orElseThrow(() -> new CustomApiException("유저를 찾을 수 없습니다"));
 
