@@ -23,6 +23,7 @@ public class AccountService {
 	private final UserRepository userRepository;
 	private final AccountRepository accountRepository;
 
+	@Transactional
 	public void delete(Long number, Long userId) {
 		// 계좌 확인
 		Account accountPS = accountRepository.findByNumber(number)
@@ -41,6 +42,7 @@ public class AccountService {
 		return new AccountListRespDto(userPS, accountListPS);
 	}
 
+	@Transactional
 	public AccountSaveRespDto register(AccountSaveReqDto accountSaveReqDto, Long userId) {
 		// User가 DB에 있는지
 		User userPS = userRepository.findById(userId).orElseThrow(() -> new CustomApiException("유저를 찾을 수 없습니다"));
