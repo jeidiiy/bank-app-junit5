@@ -10,6 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.jeidiiy.bankappjunit5.domain.account.Account;
 import io.jeidiiy.bankappjunit5.domain.account.AccountRepository;
+import io.jeidiiy.bankappjunit5.domain.transaction.Transaction;
+import io.jeidiiy.bankappjunit5.domain.transaction.TransactionEnum;
+import io.jeidiiy.bankappjunit5.domain.transaction.TransactionRepository;
 import io.jeidiiy.bankappjunit5.domain.user.User;
 import io.jeidiiy.bankappjunit5.domain.user.UserRepository;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.AccountSaveReqDto;
@@ -22,6 +25,39 @@ import lombok.RequiredArgsConstructor;
 public class AccountService {
 	private final UserRepository userRepository;
 	private final AccountRepository accountRepository;
+	private final TransactionRepository transactionRepository;
+
+	@Transactional
+	public AccountDepositRespDto deposit(AccountDepositReqDto accountDepositReqDto) {
+		// 0원 체크
+		if (accountDepositReqDto.getAmount() <= 0L) {
+			throw new CustomApiException("0원 이하의 금액을 입금할 수 없습니다");
+		}
+
+		// 입금계좌 확인
+		Account depositAccountPS = accountRepository.findByNumber(accountDepositReqDto.getNumber())
+			.orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다"));
+
+		// 입금
+		depositAccountPS.deposit(accountDepositReqDto.getAmount());
+
+		// 거래내역 남기기
+		Transaction transaction = Transaction.builder()
+			.depositAccount(depositAccountPS)
+			.withdrawAccount(null)
+			.depositAccountBalance(depositAccountPS.getBalance())
+			.withdrawAccountBalance(null)
+			.amount(accountDepositReqDto.getAmount())
+			.gubun(TransactionEnum.DEPOSIT)
+			.sender("ATM")
+			.receiver(depositAccountPS.getNumber() + "")
+			.tel(accountDepositReqDto.getTel())
+			.build();
+
+		Transaction transactionPS = transactionRepository.save(transaction);
+
+		return new AccountDepositRespDto(depositAccountPS, transactionPS);
+	}
 
 	@Transactional
 	public void delete(Long number, Long userId) {

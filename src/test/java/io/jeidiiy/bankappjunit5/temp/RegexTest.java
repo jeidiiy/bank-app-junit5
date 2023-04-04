@@ -4,10 +4,58 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.regex.Pattern;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class RegexTest {
+	@Test
+	void account_gubun_test1() {
+		//given
+		String gubun = "DEPOSIT";
+
+		//when
+		boolean matches = Pattern.matches("^(DEPOSIT)$", gubun);
+
+		//then
+		Assertions.assertThat(matches).isTrue();
+	}
+
+	@Test
+	void account_gubun_test2() {
+		//given
+		String gubun = "TRANSFER";
+
+		//when
+		boolean matches = Pattern.matches("^(TRANSFER)$", gubun);
+
+		//then
+		Assertions.assertThat(matches).isTrue();
+	}
+
+	@Test
+	void account_tel_test1() {
+		//given
+		String gubun = "010-3333-7777";
+
+		//when
+		boolean matches = Pattern.matches("^[0-9]{3}-[0-9]{4}-[0-9]{4}", gubun);
+
+		//then
+		Assertions.assertThat(matches).isTrue();
+	}
+
+	@Test
+	void account_tel_test2() {
+		//given
+		String gubun = "01033337777";
+
+		//when
+		boolean matches = Pattern.matches("^[0-9]{11}", gubun);
+
+		//then
+		Assertions.assertThat(matches).isTrue();
+	}
 
 	@DisplayName("한글만 가능")
 	@Test

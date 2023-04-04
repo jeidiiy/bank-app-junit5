@@ -5,10 +5,30 @@ import java.time.LocalDateTime;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import io.jeidiiy.bankappjunit5.domain.account.Account;
+import io.jeidiiy.bankappjunit5.domain.transaction.Transaction;
+import io.jeidiiy.bankappjunit5.domain.transaction.TransactionEnum;
 import io.jeidiiy.bankappjunit5.domain.user.User;
 import io.jeidiiy.bankappjunit5.domain.user.UserEnum;
 
 public class DummyObject {
+
+	protected Transaction newMockDepositTransaction(
+		Long id, Account depositAccount) {
+		depositAccount.deposit(100L);
+		return Transaction.builder()
+			.id(id)
+			.depositAccount(depositAccount)
+			.withdrawAccount(null)
+			.depositAccountBalance(depositAccount.getBalance())
+			.amount(100L)
+			.gubun(TransactionEnum.DEPOSIT)
+			.sender("ATM")
+			.receiver(depositAccount.getNumber() + "")
+			.tel("01011112222")
+			.createdAt(LocalDateTime.now())
+			.updatedAt(LocalDateTime.now())
+			.build();
+	}
 
 	protected Account newAccount(Long number, User user) {
 		return Account.builder()

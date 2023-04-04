@@ -1,5 +1,6 @@
 package io.jeidiiy.bankappjunit5.service;
 
+import static io.jeidiiy.bankappjunit5.dto.account.AccountRespDto.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
@@ -7,34 +8,71 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.jeidiiy.bankappjunit5.config.dummy.DummyObject;
 import io.jeidiiy.bankappjunit5.domain.account.Account;
 import io.jeidiiy.bankappjunit5.domain.account.AccountRepository;
+import io.jeidiiy.bankappjunit5.domain.transaction.Transaction;
+import io.jeidiiy.bankappjunit5.domain.transaction.TransactionRepository;
 import io.jeidiiy.bankappjunit5.domain.user.User;
 import io.jeidiiy.bankappjunit5.domain.user.UserRepository;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto;
-import io.jeidiiy.bankappjunit5.dto.account.AccountRespDto;
-import io.jeidiiy.bankappjunit5.dto.account.AccountRespDto.AccountListRespDto;
 import io.jeidiiy.bankappjunit5.handler.ex.CustomApiException;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTests extends DummyObject {
 
+	private final Logger log = LoggerFactory.getLogger(getClass());
+
 	@InjectMocks
 	private AccountService accountService;
-
 	@Mock
 	private UserRepository userRepository;
-
 	@Mock
 	private AccountRepository accountRepository;
+	@Mock
+	private TransactionRepository transactionRepository;
+
+	// Account's balance 확인
+	// Transaction's balance 확인
+	@Test
+	void deposit_test() throws Exception {
+		//given
+		AccountDepositReqDto depositReqDto = AccountDepositReqDto.builder()
+			.number(1111L)
+			.amount(100L)
+			.gubun("DEPOSIT")
+			.tel("01011112222")
+			.build();
+
+		// stub 1
+		User mockUser = newMockUser(1L, "test", "스트테"); // 실행됨
+		Account mockDepositAccount1 = newMockAccount(1L, 1111L, 1000L, mockUser); // 실행됨
+		given(accountRepository.findByNumber(any())).willReturn(Optional.of(mockDepositAccount1)); // 실행 안 됨
+
+		// stub 2 (스텁이 진행될 때마다 연관된 객체는 새로 만들어서 주입해야 한다. 실행 중 타이밍이 꼬인다.
+		User mockUser2 = newMockUser(1L, "test", "스트테"); // 실행됨
+		Account mockDepositAccount2 = newMockAccount(1L, 1111L, 1000L, mockUser2); // 실행됨
+		Transaction mockTransaction = newMockDepositTransaction(1L, mockDepositAccount2); // 실행됨
+		given(transactionRepository.save(any())).willReturn(mockTransaction); // 실행 안 됨
+
+		//when
+		AccountDepositRespDto accountDepositRespDto = accountService.deposit(depositReqDto);
+		log.info("mockDepositAccount1.balance = {}", mockDepositAccount1.getBalance());
+		log.info("mockDepositAccount2.balance = {}", mockDepositAccount2.getBalance());
+		log.info("accountDepositRespDto.balance = {}",
+			accountDepositRespDto.getTransactionDto().getDepositAccountBalance());
+
+		//then
+		assertThat(accountDepositRespDto.getTransactionDto().getDepositAccountBalance()).isEqualTo(1100L);
+	}
 
 	@Test
 	void delete_test() throws Exception {
@@ -51,7 +89,7 @@ class AccountServiceTests extends DummyObject {
 		accountService.delete(number, userId);
 
 		//then
-		Assertions.assertThatThrownBy(() -> {
+		assertThatThrownBy(() -> {
 			throw new CustomApiException("계좌삭제 실패");
 		});
 	}
@@ -99,7 +137,7 @@ class AccountServiceTests extends DummyObject {
 		when(accountRepository.save(any())).thenReturn(mockAccount);
 
 		//when
-		AccountRespDto.AccountSaveRespDto accountSaveRespDto = accountService.register(accountSaveReqDto, 1L);
+		AccountSaveRespDto accountSaveRespDto = accountService.register(accountSaveReqDto, 1L);
 
 		//then
 		assertThat(accountSaveRespDto.getNumber()).isEqualTo(mockAccount.getNumber());
