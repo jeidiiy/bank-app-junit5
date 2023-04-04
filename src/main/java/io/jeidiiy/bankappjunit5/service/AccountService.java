@@ -5,6 +5,11 @@ import static io.jeidiiy.bankappjunit5.dto.account.AccountRespDto.*;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +23,9 @@ import io.jeidiiy.bankappjunit5.domain.user.UserRepository;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.AccountDepositReqDto;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.AccountSaveReqDto;
 import io.jeidiiy.bankappjunit5.handler.ex.CustomApiException;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -27,6 +34,47 @@ public class AccountService {
 	private final UserRepository userRepository;
 	private final AccountRepository accountRepository;
 	private final TransactionRepository transactionRepository;
+
+	@Transactional
+	public AccountWithdrawRespDto withdraw(AccountWithdrawReqDto accountWithdrawReqDto, Long userId) {
+		// 0원 체크
+		if (accountWithdrawReqDto.getAmount() <= 0L) {
+			throw new CustomApiException("0원 이하의 금액을 입금할 수 없습니다");
+		}
+
+		// 출금계좌 확인
+		Account withdrawAccountPS = accountRepository.findByNumber(accountWithdrawReqDto.getNumber())
+			.orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다."));
+
+		// 출금 소유자 확인(로그인한 사람과 동일한지)
+		withdrawAccountPS.checkOwner(userId);
+
+		// 출금계좌 비밀번호 확인
+		withdrawAccountPS.checkSamePassword(accountWithdrawReqDto.getPassword());
+
+		// 출금계좌 잔액 확인
+		withdrawAccountPS.checkBalance(accountWithdrawReqDto.getAmount());
+
+		// 출금하기
+		withdrawAccountPS.withdraw(accountWithdrawReqDto.getAmount());
+
+		// 거래내역 남기기 (내 계좌에서 ATM으로 출금)
+		Transaction transaction = Transaction.builder()
+			.depositAccount(null)
+			.withdrawAccount(withdrawAccountPS)
+			.depositAccountBalance(null)
+			.withdrawAccountBalance(withdrawAccountPS.getBalance())
+			.amount(accountWithdrawReqDto.getAmount())
+			.gubun(TransactionEnum.WITHDRAW)
+			.sender(accountWithdrawReqDto.getNumber() + "")
+			.receiver("ATM")
+			.build();
+
+		Transaction transactionPS = transactionRepository.save(transaction);
+
+		// DTO 응답
+		return new AccountWithdrawRespDto(withdrawAccountPS, transactionPS);
+	}
 
 	@Transactional
 	public AccountDepositRespDto deposit(AccountDepositReqDto accountDepositReqDto) {
@@ -93,5 +141,22 @@ public class AccountService {
 		Account accountPS = accountRepository.save(accountSaveReqDto.toEntity(userPS));
 
 		return new AccountSaveRespDto(accountPS);
+	}
+
+	@Getter
+	@Setter
+	public static class AccountWithdrawReqDto {
+		@NotNull
+		@Digits(integer = 4, fraction = 4)
+		private Long number;
+		@NotNull
+		@Digits(integer = 4, fraction = 4)
+		private Long password;
+		@NotNull
+		private Long amount;
+		@NotEmpty
+		@Pattern(regexp = "^(DEPOSIT)$")
+		private String gubun;
+
 	}
 }

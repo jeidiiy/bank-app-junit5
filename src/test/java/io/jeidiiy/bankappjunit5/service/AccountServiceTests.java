@@ -41,6 +41,29 @@ class AccountServiceTests extends DummyObject {
 	@Mock
 	private TransactionRepository transactionRepository;
 
+	@Test
+	void withdraw_test() throws Exception {
+		//given
+		Long amount = 100L;
+		Long password = 1234L;
+		Long userId = 1L;
+
+		User mockUser = newMockUser(1L, "test", "스트테");
+		Account mockAccount = newMockAccount(1L, 1111L, 1000L, mockUser);
+
+		//when
+		if (amount <= 0L) {
+			throw new CustomApiException("0원 이하의 금액은 입금할 수 없습니다");
+		}
+		mockAccount.checkOwner(userId);
+		mockAccount.checkSamePassword(password);
+		mockAccount.checkBalance(amount);
+		mockAccount.withdraw(amount);
+
+		//then
+		assertThat(mockAccount.getBalance()).isEqualTo(900L);
+	}
+
 	// Account's balance 확인
 	// Transaction's balance 확인
 	@Test
