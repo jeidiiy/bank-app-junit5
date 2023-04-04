@@ -4,6 +4,8 @@ import static io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import javax.persistence.EntityManager;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jeidiiy.bankappjunit5.config.dummy.DummyObject;
+import io.jeidiiy.bankappjunit5.domain.account.AccountRepository;
+import io.jeidiiy.bankappjunit5.domain.user.User;
 import io.jeidiiy.bankappjunit5.domain.user.UserRepository;
 
 @Transactional
@@ -30,15 +34,35 @@ class AccountControllerTests extends DummyObject {
 
 	@Autowired
 	private MockMvc mockMvc;
-
 	@Autowired
 	private ObjectMapper objectMapper;
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	private AccountRepository accountRepository;
+	@Autowired
+	private EntityManager em;
 
 	@BeforeEach
 	void init() {
-		userRepository.save(newUser("test", "스트테"));
+		User test = userRepository.save(newUser("test", "스트테"));
+		User toast = userRepository.save(newUser("toast", "스트토"));
+		accountRepository.save(newAccount(1111L, test));
+		accountRepository.save(newAccount(2222L, toast));
+		em.clear();
+	}
+
+	@WithUserDetails(value = "test", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+	@Test
+	void deleteAccount_test() throws Exception {
+		//given
+		Long number = 1111L;
+
+		//when
+		ResultActions resultActions = mockMvc.perform(delete("/api/s/account/" + number));
+
+		//then
+		resultActions.andExpect(status().isOk());
 	}
 
 	// setupBefore=TEST_METHOD (init 메서드 실행 전에 수행됨)

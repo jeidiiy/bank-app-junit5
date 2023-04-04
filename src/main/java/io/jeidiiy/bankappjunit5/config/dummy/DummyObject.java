@@ -10,6 +10,17 @@ import io.jeidiiy.bankappjunit5.domain.user.UserEnum;
 
 public class DummyObject {
 
+	protected Account newAccount(Long number, User user) {
+		return Account.builder()
+			.number(number)
+			.password(1234L)
+			.balance(1000L)
+			.user(user)
+			.createdAt(LocalDateTime.now())
+			.updatedAt(LocalDateTime.now())
+			.build();
+	}
+
 	protected Account newMockAccount(Long id, Long number, Long balance, User user) {
 		return Account.builder()
 			.id(id)
