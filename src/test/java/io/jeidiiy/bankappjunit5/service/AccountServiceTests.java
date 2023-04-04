@@ -1,5 +1,6 @@
 package io.jeidiiy.bankappjunit5.service;
 
+import static io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.*;
 import static io.jeidiiy.bankappjunit5.dto.account.AccountRespDto.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
@@ -43,14 +44,9 @@ class AccountServiceTests extends DummyObject {
 	// Account's balance 확인
 	// Transaction's balance 확인
 	@Test
-	void deposit_test() throws Exception {
+	void deposit_test() {
 		//given
-		AccountDepositReqDto depositReqDto = AccountDepositReqDto.builder()
-			.number(1111L)
-			.amount(100L)
-			.gubun("DEPOSIT")
-			.tel("01011112222")
-			.build();
+		AccountDepositReqDto depositReqDto = new AccountDepositReqDto(1111L, 100L, "DEPOSIT", "01011112222");
 
 		// stub 1
 		User mockUser = newMockUser(1L, "test", "스트테"); // 실행됨
@@ -75,7 +71,7 @@ class AccountServiceTests extends DummyObject {
 	}
 
 	@Test
-	void delete_test() throws Exception {
+	void delete_test() {
 		//given
 		Long number = 1111L;
 		Long userId = 2L;

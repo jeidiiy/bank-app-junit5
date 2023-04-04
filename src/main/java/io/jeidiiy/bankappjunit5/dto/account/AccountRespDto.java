@@ -3,17 +3,11 @@ package io.jeidiiy.bankappjunit5.dto.account;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.jeidiiy.bankappjunit5.domain.account.Account;
 import io.jeidiiy.bankappjunit5.domain.transaction.Transaction;
 import io.jeidiiy.bankappjunit5.domain.user.User;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,10 +34,10 @@ public class AccountRespDto {
 			private String sender;
 			private String receiver;
 			private Long amount;
-			@JsonIgnore
-			private Long depositAccountBalance; // 클라이언트에 전달 X -> 서비스에서 테스트 용도
 			private String tel;
 			private String createdAt;
+			@JsonIgnore
+			private Long depositAccountBalance; // 클라이언트에 전달 X -> 서비스에서 테스트 용도
 
 			public TransactionDto(Transaction transaction) {
 				this.id = transaction.getId();
@@ -55,30 +49,6 @@ public class AccountRespDto {
 				this.tel = transaction.getTel();
 				this.createdAt = transaction.getCreatedAt().toString();
 			}
-		}
-	}
-
-	@Getter
-	@Setter
-	public static class AccountDepositReqDto {
-		@NotNull
-		@Digits(integer = 4, fraction = 4)
-		private Long number;
-		@NotNull
-		private Long amount;
-		@NotEmpty
-		@Pattern(regexp = "^(DEPOSIT)$")
-		private String gubun;
-		@NotEmpty
-		@Pattern(regexp = "^[0-9]{11}")
-		private String tel;
-
-		@Builder
-		public AccountDepositReqDto(Long number, Long amount, String gubun, String tel) {
-			this.number = number;
-			this.amount = amount;
-			this.gubun = gubun;
-			this.tel = tel;
 		}
 	}
 
