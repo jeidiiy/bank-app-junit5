@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test</title>
+</head>
+<body>
+<form>
+    <label for="username"></label><input type="text" id="username">
+    <label for="password"></label><input type="password" id="password">
+    <button type="button" onclick="login()">Submit</button>
+</form>
+</body>
+<script>
+    const login = async () => {
+        const userDto = {
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value
+        };
+
+        let userDtoStr = JSON.stringify(userDto);
+
+        const res = await fetch("http://localhost:8081/api/login", {
+            method: "post",
+            body: userDtoStr,
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            }
+        });
+
+        const resJson = await res.json();
+        console.log(resJson);
+    }
+</script>
+</html>

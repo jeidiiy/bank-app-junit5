@@ -61,6 +61,7 @@ public class SecurityConfig {
 		corsConfiguration.addAllowedMethod("*");
 		corsConfiguration.addAllowedOriginPattern("*");
 		corsConfiguration.setAllowCredentials(true);
+		corsConfiguration.addExposedHeader("Authorization");
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", corsConfiguration);
