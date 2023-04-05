@@ -37,7 +37,7 @@ public class AccountRespDto {
 			private String receiver;
 			private Long amount;
 			private String createdAt;
-			@JsonIgnore
+			// @JsonIgnore
 			private Long depositAccountBalance;
 
 			public TransactionDto(Transaction transaction) {
@@ -47,6 +47,7 @@ public class AccountRespDto {
 				this.receiver = transaction.getReceiver();
 				this.amount = transaction.getAmount();
 				this.createdAt = transaction.getCreatedAt().toString();
+				this.depositAccountBalance = transaction.getDepositAccountBalance();
 			}
 		}
 	}

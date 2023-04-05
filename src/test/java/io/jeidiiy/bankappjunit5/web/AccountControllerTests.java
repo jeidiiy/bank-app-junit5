@@ -53,6 +53,32 @@ class AccountControllerTests extends DummyObject {
 
 	@WithUserDetails(value = "test", setupBefore = TestExecutionEvent.TEST_EXECUTION)
 	@Test
+	void transferAccount_test() throws Exception {
+		//given
+		AccountTransferReqDto accountWithdrawReqDto = new AccountTransferReqDto();
+		accountWithdrawReqDto.setWithdrawNumber(1111L);
+		accountWithdrawReqDto.setDepositNumber(2222L);
+		accountWithdrawReqDto.setWithdrawPassword(1234L);
+		accountWithdrawReqDto.setAmount(100L);
+		accountWithdrawReqDto.setGubun("TRANSFER");
+
+		String requestBody = objectMapper.writeValueAsString(accountWithdrawReqDto);
+		log.info("requestBody: {}", requestBody);
+
+		//when
+		ResultActions resultActions =
+			mockMvc.perform(post("/api/s/account/transfer")
+				.content(requestBody)
+				.contentType(MediaType.APPLICATION_JSON));
+
+		//then
+		String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+		log.info("responseBody: {}", responseBody);
+		resultActions.andExpect(status().isCreated());
+	}
+
+	@WithUserDetails(value = "test", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+	@Test
 	void withdrawAccount_test() throws Exception {
 		//given
 		AccountWithdrawReqDto accountWithdrawReqDto = new AccountWithdrawReqDto();

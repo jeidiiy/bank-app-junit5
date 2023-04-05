@@ -19,6 +19,7 @@ import io.jeidiiy.bankappjunit5.config.auth.LoginUser;
 import io.jeidiiy.bankappjunit5.dto.ResponseDto;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.AccountDepositReqDto;
+import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.AccountTransferReqDto;
 import io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.AccountWithdrawReqDto;
 import io.jeidiiy.bankappjunit5.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +30,22 @@ import lombok.RequiredArgsConstructor;
 public class AccountController {
 	private final AccountService accountService;
 
+	@PostMapping("/s/account/transfer")
+	public ResponseEntity<?> transferAccount(
+		@RequestBody @Validated AccountTransferReqDto accountTransferReqDto, BindingResult bindingResult,
+		@AuthenticationPrincipal LoginUser loginUser) {
+		AccountTransferRespDto accountTransferRespDto = accountService.transfer(accountTransferReqDto,
+			loginUser.getUser().getId());
+		return new ResponseEntity<>(new ResponseDto<>(1, "계좌 이체 완료", accountTransferRespDto), HttpStatus.CREATED);
+	}
+
 	@PostMapping("/account/withdraw")
 	public ResponseEntity<?> withdrawAccount(
 		@RequestBody @Validated AccountWithdrawReqDto accountWithdrawReqDto,
 		BindingResult bindingResult,
 		@AuthenticationPrincipal LoginUser loginUser) {
 		AccountWithdrawRespDto accountWithdrawRespDto =
-		accountService.withdraw(accountWithdrawReqDto, loginUser.getUser().getId());
+			accountService.withdraw(accountWithdrawReqDto, loginUser.getUser().getId());
 		return new ResponseEntity<>(new ResponseDto<>(1, "계좌 입금 완료", accountWithdrawRespDto), HttpStatus.CREATED);
 	}
 
