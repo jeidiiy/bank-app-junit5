@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,6 +41,50 @@ class AccountServiceTests extends DummyObject {
 	private AccountRepository accountRepository;
 	@Mock
 	private TransactionRepository transactionRepository;
+
+	@Test
+	void transfer_test() throws Exception {
+		//given
+		Long userId = 1L;
+		AccountTransferReqDto accountTransferReqDto = new AccountTransferReqDto();
+		accountTransferReqDto.setWithdrawNumber(1111L);
+		accountTransferReqDto.setDepositNumber(2222L);
+		accountTransferReqDto.setWithdrawPassword(1234L);
+		accountTransferReqDto.setAmount(100L);
+		accountTransferReqDto.setGubun("TRANSFER");
+
+		User test = newMockUser(1L, "test", "스트테");
+		User toast = newMockUser(2L, "toast", "스트토");
+		Account withdrawAccount = newMockAccount(1L, 1111L, 1000L, test);
+		Account depositAccount = newMockAccount(2L, 2222L, 1000L, toast);
+
+		//when
+		// 출금 계좌와 입금 계좌가 동일하면 안 됨
+		if (accountTransferReqDto.getWithdrawNumber().compareTo(accountTransferReqDto.getDepositNumber()) == 0) {
+			throw new CustomApiException("입출금계좌가 동일할 수 없습니다");
+		}
+
+		// 0원 체크
+		if (accountTransferReqDto.getAmount() <= 0L) {
+			throw new CustomApiException("0원 이하의 금액을 입금할 수 없습니다");
+		}
+
+		// 출금 소유자 확인(로그인한 사람과 동일한지)
+		withdrawAccount.checkOwner(userId);
+
+		// 출금계좌 비밀번호 확인
+		withdrawAccount.checkSamePassword(accountTransferReqDto.getWithdrawPassword());
+
+		// 출금계좌 잔액 확인
+		withdrawAccount.checkBalance(accountTransferReqDto.getAmount());
+
+		// 이체하기
+		withdrawAccount.withdraw(accountTransferReqDto.getAmount());
+		depositAccount.deposit(accountTransferReqDto.getAmount());
+
+		Assertions.assertThat(withdrawAccount.getBalance()).isEqualTo(900L);
+		Assertions.assertThat(depositAccount.getBalance()).isEqualTo(1100L);
+	}
 
 	@Test
 	void withdraw_test() throws Exception {

@@ -12,6 +12,26 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 public class AccountReqDto {
+
+	@NoArgsConstructor
+	@Getter
+	@Setter
+	public static class AccountTransferReqDto {
+		@NotNull
+		@Digits(integer = 4, fraction = 4)
+		private Long withdrawNumber;
+		@NotNull
+		@Digits(integer = 4, fraction = 4)
+		private Long depositNumber;
+		@NotNull
+		private Long withdrawPassword;
+		@NotNull
+		private Long amount;
+		@NotEmpty
+		@Pattern(regexp = "^(TRANSFER)$")
+		private String gubun;
+	}
+
 	@NoArgsConstructor
 	@Getter
 	@Setter
