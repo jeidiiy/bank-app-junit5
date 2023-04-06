@@ -27,6 +27,20 @@ public class AccountService {
 	private final AccountRepository accountRepository;
 	private final TransactionRepository transactionRepository;
 
+	public AccountDetailRespDto showAccountDetail(Long number, Long userId, Integer page) {
+		// 1. 구분값, 페이지고정
+		String gubun = "ALL";
+
+		// 3. 계좌 소유자 확인
+		Account account = accountRepository.findByNumber(number)
+			.orElseThrow(() -> new CustomApiException("계좌를 찾을 수 없습니다."));
+		account.checkOwner(userId);
+
+		// 4. 입출금목록보기
+		List<Transaction> transactionList = transactionRepository.findTransactionList(account.getId(), gubun, page);
+		return new AccountDetailRespDto(account, transactionList);
+	}
+
 	@Transactional
 	public AccountTransferRespDto transfer(AccountTransferReqDto accountTransferReqDto, Long userId) {
 

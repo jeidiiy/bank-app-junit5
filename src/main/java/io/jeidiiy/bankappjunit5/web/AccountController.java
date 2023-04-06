@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.jeidiiy.bankappjunit5.config.auth.LoginUser;
@@ -29,6 +30,16 @@ import lombok.RequiredArgsConstructor;
 @RestController
 public class AccountController {
 	private final AccountService accountService;
+
+	@GetMapping("/s/account/{number}")
+	public ResponseEntity<?> findDetailAccount(
+		@PathVariable Long number,
+		@RequestParam(value = "page", defaultValue = "0") Integer page,
+		@AuthenticationPrincipal LoginUser loginUser) {
+		AccountDetailRespDto accountDetailRespDto = accountService.showAccountDetail(number,
+			loginUser.getUser().getId(), page);
+		return new ResponseEntity<>(new ResponseDto<>(1, "계좌 상세보기 성공", accountDetailRespDto), HttpStatus.OK);
+	}
 
 	@PostMapping("/s/account/transfer")
 	public ResponseEntity<?> transferAccount(

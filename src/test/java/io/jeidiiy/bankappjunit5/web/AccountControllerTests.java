@@ -4,6 +4,8 @@ import static io.jeidiiy.bankappjunit5.dto.account.AccountReqDto.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import javax.persistence.EntityManager;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -22,7 +24,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jeidiiy.bankappjunit5.config.dummy.DummyObject;
+import io.jeidiiy.bankappjunit5.domain.account.Account;
 import io.jeidiiy.bankappjunit5.domain.account.AccountRepository;
+import io.jeidiiy.bankappjunit5.domain.transaction.Transaction;
+import io.jeidiiy.bankappjunit5.domain.transaction.TransactionRepository;
 import io.jeidiiy.bankappjunit5.domain.user.User;
 import io.jeidiiy.bankappjunit5.domain.user.UserRepository;
 
@@ -42,16 +47,37 @@ class AccountControllerTests extends DummyObject {
 	private UserRepository userRepository;
 	@Autowired
 	private AccountRepository accountRepository;
+	@Autowired
+	private TransactionRepository transactionRepository;
+	@Autowired
+	private EntityManager em;
 
 	@BeforeEach
 	void init() {
-		User test = userRepository.save(newUser("test", "스트테"));
-		User toast = userRepository.save(newUser("toast", "스트토"));
-		accountRepository.save(newAccount(1111L, test));
-		accountRepository.save(newAccount(2222L, toast));
+		dataSetting();
+		em.clear();
 	}
 
-	@WithUserDetails(value = "test", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+	@WithUserDetails(value = "ssar", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+	@Test
+	void findDetailAccount_test() throws Exception {
+		//given
+		Long number = 1111L;
+		String page = "0";
+
+		//when
+		ResultActions resultActions = mockMvc.perform(get("/api/s/account/" + number).param("page", page));
+		String responseBody = resultActions.andReturn().getResponse().getContentAsString();
+		log.info("responseBody: {}", responseBody);
+
+		//then
+		resultActions.andExpect(jsonPath("$.data.transactionDtos[0].balance").value(900L));
+		resultActions.andExpect(jsonPath("$.data.transactionDtos[1].balance").value(800L));
+		resultActions.andExpect(jsonPath("$.data.transactionDtos[2].balance").value(700L));
+		resultActions.andExpect(jsonPath("$.data.transactionDtos[3].balance").value(800L));
+	}
+
+	@WithUserDetails(value = "ssar", setupBefore = TestExecutionEvent.TEST_EXECUTION)
 	@Test
 	void transferAccount_test() throws Exception {
 		//given
@@ -77,7 +103,7 @@ class AccountControllerTests extends DummyObject {
 		resultActions.andExpect(status().isCreated());
 	}
 
-	@WithUserDetails(value = "test", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+	@WithUserDetails(value = "ssar", setupBefore = TestExecutionEvent.TEST_EXECUTION)
 	@Test
 	void withdrawAccount_test() throws Exception {
 		//given
@@ -122,11 +148,11 @@ class AccountControllerTests extends DummyObject {
 		resultActions.andExpect(status().isCreated());
 	}
 
-	@WithUserDetails(value = "test", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+	@WithUserDetails(value = "ssar", setupBefore = TestExecutionEvent.TEST_EXECUTION)
 	@Test
 	void deleteAccount_test() throws Exception {
 		//given
-		Long number = 1111L;
+		Long number = 4444L;
 
 		//when
 		ResultActions resultActions = mockMvc.perform(delete("/api/s/account/" + number));
@@ -138,7 +164,7 @@ class AccountControllerTests extends DummyObject {
 	// setupBefore=TEST_METHOD (init 메서드 실행 전에 수행됨)
 	// setupBefore=TEST_EXECUTION (register_test 메서드 실행 전에 수행됨)
 	// DB에서 username으로 조회해서 세션에 담아주는 어노테이션
-	@WithUserDetails(value = "test", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+	@WithUserDetails(value = "ssar", setupBefore = TestExecutionEvent.TEST_EXECUTION)
 	@Test
 	void register_test() throws Exception {
 		//given
@@ -155,4 +181,26 @@ class AccountControllerTests extends DummyObject {
 		resultActions.andExpect(status().isCreated());
 	}
 
+	private void dataSetting() {
+		User ssar = userRepository.save(newUser("ssar", "쌀"));
+		User cos = userRepository.save(newUser("cos", "코스,"));
+		User love = userRepository.save(newUser("love", "러브"));
+		User admin = userRepository.save(newUser("admin", "관리자"));
+
+		Account ssarAccount1 = accountRepository.save(newAccount(1111L, ssar));
+		Account cosAccount = accountRepository.save(newAccount(2222L, cos));
+		Account loveAccount = accountRepository.save(newAccount(3333L, love));
+		Account ssarAccount2 = accountRepository.save(newAccount(4444L, ssar));
+
+		Transaction withdrawTransaction1 = transactionRepository
+			.save(newWithdrawTransaction(ssarAccount1, accountRepository));
+		Transaction depositTransaction1 = transactionRepository
+			.save(newDepositTransaction(cosAccount, accountRepository));
+		Transaction transferTransaction1 = transactionRepository
+			.save(newTransferTransaction(ssarAccount1, cosAccount, accountRepository));
+		Transaction transferTransaction2 = transactionRepository
+			.save(newTransferTransaction(ssarAccount1, loveAccount, accountRepository));
+		Transaction transferTransaction3 = transactionRepository
+			.save(newTransferTransaction(cosAccount, ssarAccount1, accountRepository));
+	}
 }
